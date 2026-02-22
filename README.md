@@ -64,9 +64,21 @@ The data model is structured in three layers:
 Example insight:
 Amsterdam was identified as the most unstable city during the observed period.
 
+---
+
+## Dashboard Overview
+
 The dashboard provides operational risk visibility and weather instability analysis per city.
 
 ![Dashboard Overview](images/dashboard_overview.png)
+
+---
+
+## Forecast & Risk Analysis
+
+This section shows 48-hour forecast risk and reliability scoring.
+
+![Forecast Dashboard](images/dashboard_forecast.png)
 
 ---
 
@@ -78,10 +90,6 @@ The reliability score is calculated using:
 - Risk level comparison
   
 This score helps evaluate how accurate forecasts are for operational planning. 
-Forecast & Risk Analysis
-This section shows 48-hour forecast risk and reliability scoring.
-
-![Forecast Dashboard](images/dashboard_forecast.png)
 
 ---
 
