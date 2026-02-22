@@ -5,7 +5,7 @@ sources:
     description: >
       Données météo brutes collectées via l’API OpenWeatherMap
       et stockées dans BigQuery après ingestion Kafka.
-    database: airflow-486914
+    database: airflow
     schema: weather_stream_us
     tables:
       - name: raw_weather
@@ -124,3 +124,4 @@ models:
 
       - name: niveau_fiabilite
         description: Classification qualitative du score (très fiable, fiable, etc.).
+
