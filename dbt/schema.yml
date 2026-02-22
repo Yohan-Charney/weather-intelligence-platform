@@ -1,0 +1,126 @@
+version: 2
+
+sources:
+  - name: weather_stream_us
+    description: >
+      Données météo brutes collectées via l’API OpenWeatherMap
+      et stockées dans BigQuery après ingestion Kafka.
+    database: airflow-486914
+    schema: weather_stream_us
+    tables:
+      - name: raw_weather
+        description: >
+            Données météo observées (current weather) brutes issues de l’API.
+
+        columns:
+          - name: ville
+            description: Ville concernée par la mesure.
+          - name: heure_run
+            description: Timestamp de collecte de la donnée.
+          - name: time_api
+            description: Timestamp fourni par l’API.
+
+      - name: raw_forecast
+        description: >
+            Données de prévisions météo brutes (forecast 5 jours / 3h).
+
+        columns:
+          - name: ville
+            description: Ville concernée par la prévision.
+          - name: heure_run
+            description: Date et heure de collecte de la prévision.
+          - name: time_api
+            description: Timestamp du créneau météo prévu.
+          - name: forecast_timestamp
+            description: Timestamp alternatif du créneau prévu.
+      
+
+
+models:
+  - name: stg_weather_stream
+    columns:
+      - name: ville
+        tests:
+          - not_null
+
+      - name: heure_meteo
+        tests:
+          - not_null
+
+  - name: stg_forecast
+    description: >
+      Table de staging des prévisions météo.
+      Contient toutes les prévisions reçues depuis l'API,
+      nettoyées, dédupliquées et enrichies avec l'horizon de prévision en heures.
+    columns:
+
+      - name: ville
+        description: Ville concernée par la prévision.
+        tests:
+          - not_null
+
+      - name: date_heure_prevue
+        description: Date et heure du créneau météo prévu.
+        tests:
+          - not_null
+
+      - name: date_heure_collecte
+        description: Date et heure à laquelle la prévision a été collectée (run du pipeline).
+        tests:
+          - not_null
+
+      - name: horizon_heures
+        description: Nombre d'heures entre la collecte et le créneau prévu.
+
+      - name: id_prevision
+        description: Identifiant unique de la prévision (clé reconstruite si absente).
+        tests:
+          - not_null
+
+  - name: int_forecast_24h
+    description: >
+      Table intermédiaire sélectionnant, pour chaque ville et créneau météo,
+      la prévision la plus proche de 36 heures avant l'évènement.
+    columns:
+
+      - name: ville
+        tests:
+          - not_null
+
+      - name: date_heure_prevue
+        tests:
+          - not_null
+
+      - name: date_heure_collecte_selectionnee
+        description: Date de collecte retenue comme étant la plus proche de 24h avant.
+
+      - name: horizon_heures
+        description: Horizon réel en heures (proche de 24).
+
+  - name: mart_weather_accuracy_24h
+    description: >
+      Table métier finale mesurant la fiabilité des prévisions météo faites
+      environ 24 heures avant l'évènement, comparées aux observations réelles.
+      Contient les écarts, scores par variable et score global de fiabilité.
+    columns:
+
+      - name: ville
+        tests:
+          - not_null
+
+      - name: date_heure
+        description: Créneau horaire (tranche de 3h) utilisé pour la comparaison.
+        tests:
+          - not_null
+
+      - name: prevision_disponible_24h
+        description: Indique si une prévision à 36h était disponible pour ce créneau (1 oui, 0 non).
+
+      - name: comparaison_possible
+        description: Indique si la comparaison est possible (prévision + observation disponibles).
+
+      - name: score_fiabilite_0_100
+        description: Score global de fiabilité sur 100.
+
+      - name: niveau_fiabilite
+        description: Classification qualitative du score (très fiable, fiable, etc.).
