@@ -103,4 +103,30 @@ Python (Pandas, NumPy)
 
 - Add predictive ML model  
 - Improve reliability scoring  
-- Add monitoring and alerting system  
+- Add monitoring and alerting system
+
+---
+
+## Architecture Diagram
+
+This project follows a modern data stack architecture:
+
+API → Kafka → Airflow → BigQuery → dbt → Power BI
+
+![Architecture](images/architecture.png)
+
+---
+
+## Dashboard Overview
+
+The dashboard provides operational risk visibility and weather instability analysis per city.
+
+![Dashboard Overview](images/dashboard_overview.png)
+
+---
+
+## Forecast & Risk Analysis
+
+This section shows 48-hour forecast risk and reliability scoring.
+
+![Forecast Dashboard](images/dashboard_forecast.png)
