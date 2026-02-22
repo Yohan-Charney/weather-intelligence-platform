@@ -4,7 +4,6 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 from datetime import datetime, timezone,timedelta
 from confluent_kafka import Producer, Consumer
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-from airflow.sensors.time_delta import TimeDeltaSensor
 from google.cloud import bigquery
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 
@@ -77,7 +76,7 @@ def send_to_kafka(**context):
     compteur = 0
     for rec in data:
             producer.produce(
-                topic = 'student-yoan-charney-mboulou-weather-stream',
+                topic = 'weather-stream',
                 value = json.dumps(rec).encode("utf-8"),
                 key=rec['ville'].encode("utf-8")
             )
@@ -93,10 +92,10 @@ def send_to_bigquery(**context):
     # connexion a big query
 
     hook = BigQueryHook(
-    gcp_conn_id="***************bigquery",
+    gcp_conn_id="bigquery",
     use_legacy_sql=False
     )
-    project_id = "airflow-486914"
+    project_id = "airflow"
     dataset_id = "weather_stream_us"
     table_id = "raw_weather"
     full_table_id = f"{project_id}.{dataset_id}.{table_id}"
@@ -127,12 +126,12 @@ def send_to_bigquery(**context):
     # Configuration du kafka consumer
     consumer_config = {
         'bootstrap.servers': 'kafka.lacapsule.academy:9093',
-        'group.id': f'*****************weather-stream-consumer-v5',
+        'group.id': f'weather-stream-consumer',
         'auto.offset.reset': 'latest'
     }
 
     consumer = Consumer(consumer_config)
-    consumer.subscribe(['********************weather-stream'])
+    consumer.subscribe(['weather-stream'])
 
     compteur = 0
     none_count = 0
@@ -217,7 +216,7 @@ def send_to_bigquery(**context):
 
 
 with DAG(
-    dag_id="user_yoan_charney_mboulou_weather_stream",
+    dag_id="eather_stream_dag",
     start_date=datetime(2025,1,1),
     schedule_interval="@hourly",
     catchup=False
@@ -226,9 +225,9 @@ with DAG(
     get_paris_weather = SimpleHttpOperator(
         task_id='get_paris_weather',
         method='GET',
-        http_conn_id='**************openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id='openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint='data/2.5/weather',
-        data={"q": "Paris,FR", "appid": "************************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
+        data={"q": "Paris,FR","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
         response_filter=lambda response: response.json(),  # Pour traiter la réponse en JSON
         log_response=True,
         retries=2,
@@ -238,9 +237,9 @@ with DAG(
     get_rome_weather = SimpleHttpOperator(
         task_id='get_rome_weather',
         method='GET',
-        http_conn_id='*****************openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id='openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint='data/2.5/weather',
-        data={"q": "Rome,IT", "appid": "***********************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
+        data={"q": "Rome,IT","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
         response_filter=lambda response: response.json(),  # Pour traiter la réponse en JSON
         log_response=True,
         retries=2,
@@ -250,9 +249,9 @@ with DAG(
     get_amsterdam_weather = SimpleHttpOperator(
         task_id='get_amsterdam_weather',
         method='GET',
-        http_conn_id='****************openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id='openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint='data/2.5/weather',
-        data={"q": "Amsterdam,NL", "appid": "*********************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
+        data={"q": "Amsterdam,NL","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
         response_filter=lambda response: response.json(),  # Pour traiter la réponse en JSON
         log_response=True,
         retries=2,
@@ -262,9 +261,9 @@ with DAG(
     get_lisbonne_weather = SimpleHttpOperator(
         task_id = 'get_lisbonne_weather',
         method = 'GET',
-        http_conn_id = '*******************openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id = 'openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint = 'data/2.5/weather',
-        data = {"q": "Lisbon,PT", "appid": "********************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
+        data = {"q": "Lisbon,PT","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
         response_filter = lambda response: response.json(),  # Pour traiter la réponse en JSON
         log_response = True,
         retries = 2,
@@ -284,9 +283,9 @@ with DAG(
 
     dbt_run = DbtCloudRunJobOperator(
         task_id = "dbt_run",
-        dbt_cloud_conn_id = "************",
-        account_id = **************,
-        job_id = **************,
+        dbt_cloud_conn_id = "dbt_default",
+        account_id = 123456789,
+        job_id = 1234567890,
         wait_for_termination=True, 
         check_interval=60,  
         timeout=3600,
@@ -295,4 +294,3 @@ with DAG(
 
 
     [get_paris_weather, get_rome_weather, get_amsterdam_weather, get_lisbonne_weather] >> kafka  >>  bigquery_task >> dbt_run
-
