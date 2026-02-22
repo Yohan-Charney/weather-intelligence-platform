@@ -8,7 +8,6 @@ from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from google.cloud import bigquery
 import json
 import logging
-import uuid
 
 
 def send_to_kafka(**context):
@@ -71,7 +70,7 @@ def send_to_kafka(**context):
 
             # Envoi vers Kafka
             producteur.produce(
-                topic='***********forecast',
+                topic='forecast',
                 value=json.dumps(message).encode("utf-8"),
                 key=ville.encode("utf-8")
             )
@@ -91,10 +90,10 @@ def send_to_bigquery(**context):
     # connexion a big query
 
     hook = BigQueryHook(
-    gcp_conn_id="**********bigquery",
+    gcp_conn_id="bigquery",
     use_legacy_sql=False
     )
-    project_id = "airflow-486914"
+    project_id = "airflow"
     dataset_id = "weather_stream_us"
     table_id = "raw_forecast"
     full_table_id = f"{project_id}.{dataset_id}.{table_id}"
@@ -131,12 +130,12 @@ def send_to_bigquery(**context):
     # Configuration du kafka consumer
     consumer_config = {
         'bootstrap.servers': 'kafka.lacapsule.academy:9093',
-        'group.id': '**************weather-forecast-consumer-v',
-        'auto.offset.reset': 'earliest'
+        'group.id': 'weather-forecast-consumer',
+        'auto.offset.reset': 'latest'
     }
 
     consumer = Consumer(consumer_config)
-    consumer.subscribe(['**************forecast'])
+    consumer.subscribe(['forecast'])
 
     compteur = 0
     none_count = 0
@@ -227,7 +226,7 @@ def send_to_bigquery(**context):
 
 
 with DAG(
-    dag_id="user_yoan_charney_mboulou_weather_forecast",
+    dag_id="weather_forecast_dag",
     start_date=datetime(2025,1,1),
     schedule_interval="0 */6 * * *",
     catchup=False,
@@ -238,10 +237,10 @@ with DAG(
     get_paris_forecast = SimpleHttpOperator(
         task_id='get_paris_forecast',
         method='GET',
-        http_conn_id='**************openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id='openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint='data/2.5/forecast',
-        data={"q": "Paris,FR", "appid": "****************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
-        response_filter=lambda response: response.json(),  # Pour traiter la réponse en JSON
+        data={"q": "Paris,FR","units": "metric"},  
+        response_filter=lambda response: response.json(),  
         log_response=True,
         retries=2,
         retry_delay=timedelta(minutes = 2),
@@ -250,10 +249,10 @@ with DAG(
     get_rome_forecast = SimpleHttpOperator(
         task_id='get_rome_forecast',
         method='GET',
-        http_conn_id='************openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id='openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint='data/2.5/forecast',
-        data={"q": "Rome,IT", "appid": "***********************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
-        response_filter=lambda response: response.json(),  # Pour traiter la réponse en JSON
+        data={"q": "Rome,IT","units": "metric"},  
+        response_filter=lambda response: response.json(), 
         log_response=True,
         retries=2,
         retry_delay=timedelta(minutes = 2),
@@ -262,10 +261,10 @@ with DAG(
     get_amsterdam_forecast = SimpleHttpOperator(
         task_id='get_amsterdam_forecast',
         method='GET',
-        http_conn_id='********openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id='openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint='data/2.5/forecast',
-        data={"q": "Amsterdam,NL", "appid": "***********************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
-        response_filter=lambda response: response.json(),  # Pour traiter la réponse en JSON
+        data={"q": "Amsterdam,NL","units": "metric"},  
+        response_filter=lambda response: response.json(), 
         log_response=True,
         retries=2,
         retry_delay=timedelta(minutes = 2),
@@ -274,10 +273,10 @@ with DAG(
     get_lisbonne_forecast = SimpleHttpOperator(
         task_id = 'get_lisbon_forecast',
         method = 'GET',
-        http_conn_id = '***********openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
+        http_conn_id = 'openweathermap_api',  # Connexion HTTP à configurer dans Airflow avec la clé API
         endpoint = 'data/2.5/forecast',
-        data = {"q": "Lisbon,PT", "appid": "***************************","units": "metric"},  # Remplacer YOUR_API_KEY par votre clé API
-        response_filter = lambda response: response.json(),  # Pour traiter la réponse en JSON
+        data = {"q": "Lisbon,PT", "units": "metric"}, 
+        response_filter = lambda response: response.json(), 
         log_response = True,
         retries = 2,
         retry_delay = timedelta(minutes = 2),
