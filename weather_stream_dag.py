@@ -1,4 +1,4 @@
-    from airflow import DAG
+from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.http.operators.http import SimpleHttpOperator
 from datetime import datetime, timezone,timedelta
@@ -295,3 +295,4 @@ with DAG(
 
 
     [get_paris_weather, get_rome_weather, get_amsterdam_weather, get_lisbonne_weather] >> kafka  >>  bigquery_task >> dbt_run
+
