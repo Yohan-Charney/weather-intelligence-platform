@@ -113,7 +113,7 @@ This project follows a modern data stack architecture:
 
 API → Kafka → Airflow → BigQuery → dbt → Power BI
 
-![Architecture](images/architecture.png)
+![Architecture](images/Architecture.png)
 
 ---
 
