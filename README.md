@@ -26,6 +26,10 @@ The project uses a modern data stack:
 - Data transformation using dbt (raw -> staging -> mart)
 - Dashboard and KPI visualization in Power BI
 
+API → Kafka → Airflow → BigQuery → dbt → Power BI
+
+![Architecture](images/Architecture.png)
+
 ---
 
 ## Data Pipeline
@@ -60,6 +64,10 @@ The data model is structured in three layers:
 Example insight:
 Amsterdam was identified as the most unstable city during the observed period.
 
+The dashboard provides operational risk visibility and weather instability analysis per city.
+
+![Dashboard Overview](images/dashboard_overview.png)
+
 ---
 
 ## Forecast Reliability Logic
@@ -70,6 +78,10 @@ The reliability score is calculated using:
 - Risk level comparison
   
 This score helps evaluate how accurate forecasts are for operational planning. 
+Forecast & Risk Analysis
+This section shows 48-hour forecast risk and reliability scoring.
+
+![Forecast Dashboard](images/dashboard_forecast.png)
 
 ---
 
@@ -104,29 +116,3 @@ Python (Pandas, NumPy)
 - Add predictive ML model  
 - Improve reliability scoring  
 - Add monitoring and alerting system
-
----
-
-## Architecture Diagram
-
-This project follows a modern data stack architecture:
-
-API → Kafka → Airflow → BigQuery → dbt → Power BI
-
-![Architecture](images/Architecture.png)
-
----
-
-## Dashboard Overview
-
-The dashboard provides operational risk visibility and weather instability analysis per city.
-
-![Dashboard Overview](images/dashboard_overview.png)
-
----
-
-## Forecast & Risk Analysis
-
-This section shows 48-hour forecast risk and reliability scoring.
-
-![Forecast Dashboard](images/dashboard_forecast.png)
