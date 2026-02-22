@@ -76,7 +76,9 @@ This score helps evaluate how accurate forecasts are for operational planning.
 ## Tech Stack
 
 **Data Engineering**
-Apache Kafka, Apache Airflow, BigQuery, dbt  
+Apache Kafka, Apache Airflow, BigQuery, dbt
+The DAG runs hourly and performs:
+API calls (4 cities) → Kafka publish → BigQuery load → dbt Cloud job
 
 **Analytics**
 SQL, Power BI (DAX), Data Modeling  
